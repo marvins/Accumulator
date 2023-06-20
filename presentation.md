@@ -370,4 +370,6 @@ Compression Accumulator.jpg
 * PNG has consistent results, but wildly different timing.
 
 ---
-### Demo 3 - 
+### Demo 3 - Finding bugs in noisy or complex environments
+
+This demo 
