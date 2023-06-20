@@ -306,7 +306,7 @@ class Accumulator final
             }
             if( has_rolling_mean() )
             {
-                sin << gap << "Rolling Mean . . : " << get_mean().value() << std::endl;
+                sin << gap << "Rolling Mean . . : " << get_rolling_mean().value() << std::endl;
             }
             if( has_max() )
             {

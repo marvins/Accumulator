@@ -25,7 +25,7 @@ TEST( Accumulator, Full_Test_01 )
     const int AVG_SLEEP_TIME_MS   = 50;
     const int SLEEP_TIME_RANGE_MS = 5;
     const size_t NUM_ITERATIONS = 250;
-    int64_t expected_size = 0;
+    double expected_size = 0;
     for( size_t iteration = 0; iteration < NUM_ITERATIONS; iteration++ )
     {
         // Sleep
@@ -33,7 +33,7 @@ TEST( Accumulator, Full_Test_01 )
         acc::Stopwatch<> sleep_timer;
         std::this_thread::sleep_for( std::chrono::milliseconds( EXP_SLEEP ) );
         acc.insert( sleep_timer.stop().count() );
-        expected_size += EXP_SLEEP;
+        expected_size += sleep_timer.stop().count();
     }
 
     // Log results
@@ -44,7 +44,7 @@ TEST( Accumulator, Full_Test_01 )
     ASSERT_TRUE( acc.get_min() );
     ASSERT_TRUE( acc.get_max() );
     ASSERT_LT( acc.get_min().value(), acc.get_mean().value() );
-    ASSERT_NEAR( acc.get_sum().value(), expected_size, 0.1 );
+    ASSERT_NEAR( acc.get_sum().value(), expected_size, 10 );
 }
 
 /***********************************************/

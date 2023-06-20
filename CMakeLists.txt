@@ -27,6 +27,8 @@ include_directories( include )
 
 add_subdirectory( test )
 
+add_definitions( "-DBOOST_PARAMETER_DISABLE_MP11_USAGE" )
+
 # Add source code
 add_executable( acc-demo-01
                 src/demo1.cpp
@@ -38,6 +40,13 @@ add_executable( acc-demo-01
                 # Add source code
 add_executable( acc-demo-02
                 src/demo2.cpp
+                include/lib-acc/Accumulator.hpp
+                include/lib-acc/Features.hpp
+                include/lib-acc/Stats_Aggregator.hpp
+                include/lib-acc/Stopwatch.hpp )
+
+add_executable( acc-demo-03
+                src/demo3.cpp
                 include/lib-acc/Accumulator.hpp
                 include/lib-acc/Features.hpp
                 include/lib-acc/Stats_Aggregator.hpp

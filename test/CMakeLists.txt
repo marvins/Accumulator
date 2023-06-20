@@ -8,6 +8,7 @@ enable_testing()
 
 add_executable( acc_test
                 TEST_Accumulator.cpp
+                TEST_boost.cpp
                 TEST_Features.cpp
                 TEST_FeatureUtilities.cpp
 )

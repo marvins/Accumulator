@@ -16,4 +16,18 @@ Use Cases
 
 ### Measuring Compression Ratios or other "Live" metrics
 
-* 
+* Add results into the stats aggregator and verify the results are not acting weird over time.
+
+
+Accumulator API
+---------------
+
+### Stopwatch
+
+Provides simple API for tracking the duration of an event.  2 lines are required (Creation of object or `start()`, followed by `stop()`).  `stop()` returns a `std::chrono::duration` in the form of `milliseconds` or whatever template parameter is specified.
+
+### Accumulator
+
+Wrapper around `boost::accumulators::accumulator_set` which stores and prints various statistical metrics for a given dataset.  Just insert into the `Accumulator` object and it'll do the math for you.
+
+
