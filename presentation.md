@@ -372,4 +372,17 @@ Compression Accumulator.jpg
 ---
 ### Demo 3 - Finding bugs in noisy or complex environments
 
-This demo 
+This demo shows a degrading region of code.  This is common in programming.
+* Memory leaks can cause performance loss as you run out of RAM.
+* Poorly written algorithms can degrade as $O(N^2)$ or worse operations take their toll.
+
+This demo also shows how to spot issues in noisy logic.
+* What happens when the results are all over the place normally and you need to detect a "growing" problem relative to the noise?
+* Deadlocks and race conditions create situations where you can experience infrequent "blackouts" with relatively stable normal operation.
+
+---
+### Demo 3 - Notes
+
+* This only matters if you are dealing with code that can't easily run in a profiler, debugger, or other normal toolchain.
+
+* This demo uses a comically-bad prime sieve to illustrate degradation over time.
