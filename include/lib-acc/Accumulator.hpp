@@ -306,7 +306,7 @@ class Accumulator final
             {
                 sin << PRINTER::to_log_string( "Count",
                                                get_count().value(),
-                                               m_units,
+                                               "",
                                                precision );
             }
             if( has_mean() )

@@ -88,21 +88,23 @@ class ReallyComicallyBadAddressBook
 {
     public:
 
-        void insert( const std::string& phone_number,
+        bool insert( const std::string& phone_number,
                      const std::string& name )
         {
             Contact ref_contact( phone_number, name );
+            std::unique_lock<std::mutex> lck( m_mtx );
             auto it = std::find( m_phone_numbers.begin(),
                                  m_phone_numbers.end(),
                                  ref_contact );
 
             if( it != m_phone_numbers.end() )
             {
-                return;
+                return false;
             }
             m_phone_numbers.emplace_back( phone_number, name );
             std::sort( m_phone_numbers.begin(),
                        m_phone_numbers.end() );
+            return true;
         }
 
         size_t size() const
@@ -115,6 +117,7 @@ class ReallyComicallyBadAddressBook
             std::stringstream sout;
             sout << "Address Book" << std::endl;
             sout << "------------" << std::endl;
+            std::unique_lock<std::mutex> lck( m_mtx );
             for( const auto& contact : m_phone_numbers )
             {
                 sout << contact.print() << std::endl;
@@ -123,8 +126,10 @@ class ReallyComicallyBadAddressBook
         }
     private:
 
-        std::vector<Contact> m_phone_numbers;
-        //std::deque<Contact> m_phone_numbers;
+        //std::vector<Contact> m_phone_numbers;
+        std::deque<Contact> m_phone_numbers;
+
+        mutable std::mutex m_mtx;
 };
 
 /**
@@ -155,30 +160,56 @@ std::string Generate_Name()
 int main( int argc, char* argv[] )
 {
     const size_t max_entries = 100000;
+    const size_t num_threads = 4;
+    const size_t window_size = 10;
+    const size_t log_interval = 100;
 
     // Step 1:  Show increasingly bad performance
     ReallyComicallyBadAddressBook address_book;
 
-    auto timing_acc = acc::Accumulator<acc::ALL_FEATURE_SET, double>::create_rolling( "ms", 100 );
+    auto timing_acc = acc::Accumulator<acc::ALL_FEATURE_SET, double>::create_rolling( "ms", window_size );
 
-    size_t loops = 0;
-    while( address_book.size() < max_entries )
+    std::vector<std::thread> threads;
+
+    for( size_t i=0; i<num_threads; i++ )
     {
-        // Create a randomly generated phone number
-        auto phone_number = Generate_Phone_Number();
-        auto contact      = Generate_Name();
+        threads.push_back( std::thread( [&address_book, &timing_acc,&log_interval](){
+            size_t loops = 0;
+            std::string phone_number;
+            std::string contact;
+            while( address_book.size() < max_entries )
+            {
+                auto stopwatch = acc::Stopwatch<>();
 
-        auto stopwatch = acc::Stopwatch<>();
-        address_book.insert( phone_number,
-                             contact );
-        timing_acc.insert( stopwatch.stop().count() );
+                while( true )
+                {
+                    // Create a randomly generated phone number
+                    phone_number = Generate_Phone_Number();
+                    contact      = Generate_Name();
 
-        if( loops++ % 1000 == 0 )
+                    if( address_book.insert( phone_number,
+                                             contact ) )
+                    {
+                        break;
+                    }
+                }
+
+                timing_acc.insert( stopwatch.stop().count() );
+
+                if( loops++ % log_interval == 0 )
+                {
+                    BOOST_LOG_TRIVIAL(info) << " Adding Entry Number:" << phone_number << " Name: " << contact << " "
+                                            << timing_acc.toLogString<acc::print::shell::Printer>();
+                }
+            }
+        } ) );
+    }
+
+    for( auto& t : threads )
+    {
+        if( t.joinable() )
         {
-            BOOST_LOG_TRIVIAL(info) << "Timing Results. Loop: " << loops << std::endl
-                                    << timing_acc.toLogString<acc::print::pretty::Printer>();
-            BOOST_LOG_TRIVIAL(info) << " Adding Entry " << phone_number << " " << contact
-                                    << timing_acc.toLogString<acc::print::shell::Printer>();
+            t.join();
         }
     }
 

@@ -19,6 +19,22 @@ namespace acc::print::shell {
 struct Printer
 {
     /**
+     * @brief Format the key to be upper case and with underscores
+    */
+    static std::string format_key( std::string key )
+    {
+        // Convert to upper case
+        std::transform( key.begin(), key.end(), key.begin(), ::toupper );
+
+        // Swap spaces with underscores
+        std::replace_if( std::begin(key),
+                         std::end(key),
+                        []( char v ) { return v==' '; },
+                        '_' );
+        return std::move( key );
+    }
+
+    /**
      * @brief Print generic field
     */
     template <typename SAMPLE_TYPE,
@@ -32,7 +48,7 @@ struct Printer
         sout << std::fixed
              << std::setprecision( precision );
 
-        sout << key << " " << value << " " << units << " ";
+        sout << format_key( key ) << " " << value << " " << units << " ";
         return sout.str();
     }
 
