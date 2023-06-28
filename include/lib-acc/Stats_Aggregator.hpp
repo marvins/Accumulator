@@ -36,7 +36,6 @@ class Stats_Aggregator
 
     private:
 
-        /// List of accumulators
 
 
 }; // End of class Stats_Aggregator

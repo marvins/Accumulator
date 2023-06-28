@@ -19,6 +19,9 @@
 
 // Project Libraries
 #include "Feature_Utilities.hpp"
+#include "LogFormat.hpp"
+#include "Shell_Printer.hpp"
+#include "Pretty_Printer.hpp"
 
 namespace acc {
 
@@ -69,6 +72,13 @@ class Accumulator final
             m_last_entry_entered = new_value;
             m_insert_counter++;
             m_rolling_count = std::min( (int64_t)m_rolling_count + 1, (int64_t)m_insert_counter );
+        }
+
+        template<typename REP_TYPE,
+                 typename RATIO_TYPE>
+        void insert( const std::chrono::duration<REP_TYPE,RATIO_TYPE>& duration )
+        {
+            insert( (SAMPLE_TP)duration.count() );
         }
 
         /**
@@ -280,67 +290,100 @@ class Accumulator final
         /**
          * @brief Print to pretty-string
         */
-        std::string toLogString(  size_t  offset = 4,
-                                  int     precision = 6 ) const
+        template <typename PRINTER = acc::print::pretty::Printer>
+        std::string toLogString( int precision = 6 ) const
         {
-            std::string gap( offset, ' ' );
             std::stringstream sin;
 
             // Check insert counter
             if( m_insert_counter <= 0 )
             {
-                sin << gap << "No Entries Accumulated." << std::endl;
+                std::cerr << "No Entries Accumulated." << std::endl;
                 return sin.str();
             }
 
-            // Create header
-            sin << std::fixed << std::setprecision( precision );
-
             if( has_count() )
             {
-                sin << gap << "Count. . . . . . : " << get_count().value() << " entry(s)." << std::endl;
+                sin << PRINTER::to_log_string( "Count",
+                                               get_count().value(),
+                                               m_units,
+                                               precision );
             }
             if( has_mean() )
             {
-                sin << gap << "Mean . . . . . . : " << get_mean().value() << std::endl;
+                sin << PRINTER::to_log_string( "Mean",
+                                               get_mean().value(),
+                                               m_units,
+                                               precision );
             }
             if( has_rolling_mean() )
             {
-                sin << gap << "Rolling Mean . . : " << get_rolling_mean().value() << std::endl;
-            }
-            if( has_max() )
-            {
-                sin << gap << "Min. . . . . . . : " << get_min().value()  << " " << m_units << std::endl;
+                sin << PRINTER::to_log_string( "Rolling Mean",
+                                               get_rolling_mean().value(),
+                                               m_units,
+                                               precision );
             }
             if( has_min() )
             {
-                sin << gap << "Max. . . . . . . : " << get_max().value()  << " " << m_units << std::endl;
+                sin << PRINTER::to_log_string( "Min",
+                                               get_min().value(),
+                                               m_units,
+                                               precision );
+            }
+            if( has_max() )
+            {
+                sin << PRINTER::to_log_string( "Max",
+                                               get_max().value(),
+                                               m_units,
+                                               precision );
             }
             if( has_rolling_variance() )
             {
-                sin << gap << "Rolling StdDev . : " << std::sqrt(get_rolling_variance().value())  << " " << m_units << std::endl;
+                sin << PRINTER::to_log_string( "Rolling StdDev",
+                                               std::sqrt(get_rolling_variance().value()),
+                                               m_units,
+                                               precision );
             }
             if( has_variance() )
             {
-                sin << gap << "StdDev . . . . . : " << std::sqrt(get_variance().value())  << " " << m_units << std::endl;
+                sin << PRINTER::to_log_string( "StdDev",
+                                               std::sqrt(get_variance().value()),
+                                               m_units,
+                                               precision );
             }
             if( has_rolling_variance() )
             {
-                sin << gap << "Rolling Variance : " << get_rolling_variance().value()  << " " << m_units << std::endl;
+                sin << PRINTER::to_log_string( "Rolling Variance",
+                                               get_rolling_variance().value(),
+                                               m_units,
+                                               precision );
             }
             if( has_variance() )
             {
-                sin << gap << "Variance . . . . : " << get_variance().value()  << " " << m_units << std::endl;
+                sin << PRINTER::to_log_string( "Variance",
+                                               get_variance().value(),
+                                               m_units,
+                                               precision );
             }
             if( has_rolling_sum() )
             {
-                sin << gap << "Rolling Sum. . . : " << get_rolling_sum().value()  << " " << m_units << std::endl;
+                sin << PRINTER::to_log_string( "Rolling Sum",
+                                               get_rolling_sum().value(),
+                                               m_units,
+                                               precision );
             }
             if( has_sum() )
             {
-                sin << gap << "Sum . . . . . . . : " << get_sum().value()  << " " << m_units << std::endl;
+                sin << PRINTER::to_log_string( "Sum",
+                                               get_sum().value(),
+                                               m_units,
+                                               precision );
             }
-            sin << gap << "Last Entry. . . . . . : " << m_last_entry_entered.load() << " " << m_units << std::endl;
+
+            sin << PRINTER::to_log_string( "Last Entry",
+                                           m_last_entry_entered.load(),
+                                           m_units,
+                                           precision );
 
             // Return string
             return sin.str();

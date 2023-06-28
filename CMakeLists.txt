@@ -33,7 +33,11 @@ add_definitions( "-DBOOST_PARAMETER_DISABLE_MP11_USAGE" )
 add_executable( acc-demo-01
                 src/demo1.cpp
                 include/lib-acc/Accumulator.hpp
+                include/lib-acc/Feature_Utilities.hpp
                 include/lib-acc/Features.hpp
+                include/lib-acc/LogFormat.hpp
+                include/lib-acc/Pretty_Printer.hpp
+                include/lib-acc/Shell_Printer.hpp
                 include/lib-acc/Stats_Aggregator.hpp
                 include/lib-acc/Stopwatch.hpp )
 
@@ -53,4 +57,8 @@ add_executable( acc-demo-03
                 include/lib-acc/Stopwatch.hpp )
 
 target_link_libraries( acc-demo-02
+                       ${Boost_LIBRARIES}
                        ${OpenCV_LIBRARIES} )
+
+target_link_libraries( acc-demo-03
+                       ${Boost_LIBRARIES} )

@@ -37,7 +37,7 @@ TEST( Accumulator, Full_Test_01 )
     }
 
     // Log results
-    std::cout << acc.toLogString() << std::endl;
+    std::cout << acc.toLogString<acc::print::pretty::Printer>() << std::endl;
     ASSERT_EQ( acc.get_count().value(), NUM_ITERATIONS );
     ASSERT_TRUE( acc.get_mean() );
     ASSERT_LE( std::fabs( acc.get_mean().value() - AVG_SLEEP_TIME_MS ), SLEEP_TIME_RANGE_MS );
