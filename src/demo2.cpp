@@ -100,9 +100,9 @@ void Check_Acc_Status( const acc::Accumulator<acc::FULL_FEATURE_SET, double>& ti
     okay_to_run = true;
     while( okay_to_run )
     {
-        BOOST_LOG_TRIVIAL(info) << "Timing Accumulator: " << format << std::endl
+        BOOST_LOG_TRIVIAL(info) << "Timing Accumulator: \"" << format << "\"" << std::endl
                                 << timing_acc.toLogString<>( ) << std::endl;
-        BOOST_LOG_TRIVIAL(info) << "Compression Accumulator" << format << std::endl
+        BOOST_LOG_TRIVIAL(info) << "Compression Accumulator: \"" << format << "\"" << std::endl
                                 << compression_acc.toLogString<>() << std::endl;
         std::this_thread::sleep_for( std::chrono::seconds( 20 ) );
 

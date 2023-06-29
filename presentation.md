@@ -18,7 +18,6 @@ Provides powerful wrappers for performing real-time statistical operations on da
 * Mean, Median, Mode
 * Variance
 * Density, Moments, Tails
-* Much more
 
 ---
 
@@ -47,8 +46,7 @@ This demo is focused on using this library, which wraps Boost Accumulators, to e
 
 # What is this not good for?
 
-* This will __never__ beat the power using `awk`, `sed`, and `grep` on log files.  It's just faster.
-  * Use Pyplot to actually visualize trends.
+* This will __never__ beat the power using `awk`, `sed`, and `grep` on log files.  It's just faster and better for __real-time__ logging.
 * It won't beat a profiler or debugger.  This is designed for cases where we can't use either effectively.
 
 
@@ -109,7 +107,7 @@ double max    = boost::accumulators::max( acc );
 ---
 ## A Few Notes About Template Meta-Programming in C++
 
-* Don't do it unless you are __amazing__ with C++ and have a __high__ tolerance for pain.
+* Don't do it unless you are __confident__ with C++ and have a __high__ tolerance for pain.
 
 * It can cause ___incredible___ pain and suffering:
     * It creates vague and useless compilation errors.  Botched recusion in templates can create thousands of lines of replicated errors.
@@ -136,15 +134,13 @@ double max    = boost::accumulators::max( acc );
 Simple wrapper around Boost Accumulators
 
 * `Accumulator` class for managing features and printing output.
-* `Stats_Aggregator` class for tracking stats over groups of accumulators.
 * `Stopwatch` class for easier timing.
-* Thread-safe, so you can insert even if inside a pool.
 
-For all demos, these can be treated as the same fundamental thing.  The goal is to identify _why_ to use accumulators, not which one.
+
 
 ---
 
-## Demo 1 : Using Accumulators to track runtime performance.
+## Demo 1 : Using Boost Accumulators directly to track runtime performance.
 
 example: `src/demo1.cpp`
 
@@ -222,25 +218,25 @@ Final Results After 1000 Iterations
 Final Results After 1000 Iterations
     Count : 1000 entries
     Mean  : 102.5610 ms
-    Min   : 0.1000 ms
+    Min   : 0.1020 ms
     Max   : 300.0000 ms
     StdDev: 24.0851 ms
     Sum   : 82561.0000 ms
 ```
 
-1. Mean is 102 ms with a very large Standard-Deviation.
-    * This method is inconsistent and may have logic that needs review.
-2. __Min__ is ___effectively___ zero.  You may have an edge case or something not working properly.
+1. Mean is 102 ms with a relatively large Standard-Deviation.
+    * This method has inconsistent performance.
+2. __Min__ is ___effectively___ zero.  You may have an edge case or something not working properly, causing immediate returns.
 3. __Max__ is 3x the mean for what was previously a very tight result.
     * Look for deadlocks, resource starvation, or other multi-threading woes.
-    * If max is considerably far from the mean than the min, you likely have a deadlock.  Algorithms typically have a fairly centered mean.
+    * If max is considerably far from the mean than the min, you likely have a deadlock.  Algorithms typically have a fairly centered mean wrt __min/mean/max__.
 
 
 ---
 
 ## Demo 2 - Analyzing Compression Performance
 
-In this very lazy example, a batch of random images are created and written to disk.  The size is measured of the image and compared against the expected size.  Timing info is also tracked. Multiple image formats are considered.
+In this very lazy example, a batch of random images are created and written to disk.  The compressed image and expected raw image are compared.  Timing info is also tracked. Multiple image formats are considered.
 
 
 1. Create Accumulators
@@ -299,7 +295,7 @@ const size_t expected_size = img_size.width * img_size.height * 3;
 
 // 3. Create output image path
 // 4. Build image
-// 5. Smooth with median filter to help dilute noise
+// 5. Smooth with median filter to more realistically simulate noise
 // 6. Write image
 
 // 7. Compute compression percentage
@@ -312,7 +308,7 @@ comp_acc.insert( file_ratio * 100 );
 ## Demo 2 - Analyzing Compression Performance
 
 ``` bash
-Timing Accumulator: .jpg
+Timing Accumulator: ".jpg"
     Count. . . . . . : 2000 entry(s).
     Mean . . . . . . : 452.417000
     Min. . . . . . . : 230.000000 ms
@@ -322,7 +318,7 @@ Timing Accumulator: .jpg
     Sum. . . . . . . : 904834.000000 ms
     Last Entry. . . .: 230.000000 ms
 
-Compression Accumulator.jpg
+Compression Accumulator: ".jpg"
     Count. . . . . . : 2000 entry(s).
     Mean . . . . . . : 15.368703
     Min. . . . . . . : 15.323849 %
@@ -372,12 +368,12 @@ Compression Accumulator.jpg
 ---
 ### Demo 3 - Finding bugs in noisy or complex environments
 
-This demo shows a degrading region of code.  This is common in programming.
+This demo shows a degrading algorithm.  This is common in programming.
 * Memory leaks can cause performance loss as you run out of RAM.
 * Poorly written algorithms can degrade as $O(N^2)$ or worse operations take their toll.
 
-This demo also shows how to spot issues in noisy logic.
-* What happens when the results are all over the place normally and you need to detect a "growing" problem relative to the noise?
+This demo also shows how to spot random failures using rolling windows.
+* What happens when the results are too noisy for casual observation, but still growing?
 * Deadlocks and race conditions create situations where you can experience infrequent "blackouts" with relatively stable normal operation.
 
 ---
@@ -385,4 +381,43 @@ This demo also shows how to spot issues in noisy logic.
 
 * This only matters if you are dealing with code that can't easily run in a profiler, debugger, or other normal toolchain.
 
-* This demo uses a comically-bad prime sieve to illustrate degradation over time.
+* This demo uses a comically-bad set of data structures to store increasingly large amounts of data.
+
+* Previous demos showed log output in a "pretty" format.  This demo shows log output in a "shell-friendly" format.
+   * `include/lib-acc/Pretty_Printer.hpp`
+   * `include/lib-acc/Shell_Printer.hpp`
+   * No reason you can't use Boost `property_tree` to write JSON or XML either.
+
+See `demo3.cpp` for implementation.
+
+---
+### Demo 3 Results
+
+This "shell-friendly" format uses space-deliminated tokens which can be easily parsed by `awk` or `python`.  This makes it easier to plot results.
+
+```
+[2023-06-28 19:52:57.245827] [0x0000700001747000] [info]     Adding Entry Number:2340994656 Name: mxiqm COUNT 18753
+MEAN 44.496027 ms ROLLING_MEAN 54.400000 ms MIN 0.000000 ms MAX 2047.000000 ms ROLLING_STDDEV 132.216321 ms
+STDDEV 116.157736 ms ROLLING_VARIANCE 17481.155556 ms VARIANCE 13492.619632 ms ROLLING_SUM 544.000000 ms
+SUM 834434.000000 ms LAST_ENTRY 430.000000 ms
+```
+
+Included is a script (`./scripts/plot-log-results.py`) which visualizes these log results wrt time.
+
+__NOTE:__ Notice how `demo3.cpp` utilizes timestamps from `boost::log` to plot time.
+
+---
+# Demo 3 Results
+
+![width:900px](./docs/images/demo3.png)
+
+Notice random spikes in the rolling data?
+
+---
+# Summary
+
+* Boost Accumulators can be useful in situations where Heisenbugs limit the efficacy of standard programming troubleshooting tools.
+* This library can use a lot of additional work to make better
+  * Implement a rolling __min/max__ for a specific window size.
+  * Allow inserting `std::chrono::duration` objects directly using `std::enable_if`.
+  * Use `boost::mpl::map` to bind `boost::accumulators::features` and `boost::accumulators::tag` for less copy/paste in the `Accumulator` class.

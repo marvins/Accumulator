@@ -2,26 +2,6 @@
  * @file    demo3.cpp
  * @author  Marvin Smith
  * @date    6/19/2023
- *
- *  Use the Accumulator with a Stats-Aggregator for
- *  tracking lots of stuff.
- *
- * This application simulates 3 sequential stages.
- * - The first runs clean, consistent, and without noticeable issues except for periodic
- *   failures.  The failures manifest themselves as immediate returns.
- *      - This will show how
- *   min/max can find failures when mean/std cannot.
- *
- * - The second set of methods has inconsistent timing due to an algorithm which takes
- *    longer to complete the longer it runs.
- *      - This will show how you can use accumulators and the stats aggregator to show degredation.
- *
- * - The third performs okay, but periodic degredation and is difficult to troubleshoot due to
- *    noisy data.
- *      - This shows how to utilize a rolling window so that you can spot bad behavior for a period
- *        of time without getting bogged down in noisy data.
- *
- *
 */
 
 // C++ Includes
